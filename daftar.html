@@ -15,20 +15,16 @@
 </head>
 <body class="p-6">
     <div class="w-full max-w-md my-10">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-black tracking-tighter uppercase">APIP <span class="text-blue-500">STORE</span></h1>
-        </div>
-
         <div class="glass-card rounded-3xl p-8 shadow-2xl border border-blue-500/20">
             <h2 class="text-2xl font-bold mb-6 text-center">Buat Akun Baru</h2>
-            <form id="registerForm" class="space-y-4">
+            <form id="formDaftar" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1 text-slate-300">Nama Lengkap</label>
-                    <input type="text" id="regName" class="w-full px-4 py-3 rounded-xl text-sm" placeholder="Nama lengkap Anda" required>
+                    <input type="text" id="regName" class="w-full px-4 py-3 rounded-xl text-sm" placeholder="Nama lengkap" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1 text-slate-300">Nomor WhatsApp</label>
-                    <input type="tel" id="regWa" class="w-full px-4 py-3 rounded-xl text-sm" placeholder="0812xxxxxxxx" required>
+                    <label class="block text-sm font-medium mb-1 text-slate-300">WhatsApp</label>
+                    <input type="tel" id="regWa" class="w-full px-4 py-3 rounded-xl text-sm" placeholder="0812xxx" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 text-slate-300">Email</label>
@@ -36,41 +32,39 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 text-slate-300">Password</label>
-                    <input type="password" id="regPass" class="w-full px-4 py-3 rounded-xl text-sm" placeholder="Buat password kuat" required>
+                    <input type="password" id="regPass" class="w-full px-4 py-3 rounded-xl text-sm" placeholder="Password kuat" required>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition duration-300">
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-900/40">
                     Daftar Sekarang
                 </button>
             </form>
-            <div class="mt-8 text-center text-sm text-slate-400">
-                Sudah punya akun? <a href="login.html" class="text-blue-500 font-bold hover:underline">Masuk Disini</a>
-            </div>
+            <p class="mt-8 text-center text-sm text-slate-400">Sudah punya akun? <a href="login.html" class="text-blue-500 font-bold hover:underline">Masuk</a></p>
         </div>
     </div>
 
     <script>
-        document.getElementById('registerForm').onsubmit = function(e) {
+        document.getElementById('formDaftar').onsubmit = function(e) {
             e.preventDefault();
-            const members = JSON.parse(localStorage.getItem('apip_members')) || [];
             
-            const newMember = {
-                id: Date.now(),
-                name: document.getElementById('regName').value,
-                wa: document.getElementById('regWa').value,
-                email: document.getElementById('regEmail').value,
-                pass: document.getElementById('regPass').value,
-                saldo: 0,
-                status: 'Member'
-            };
+            const name = document.getElementById('regName').value;
+            const wa = document.getElementById('regWa').value;
+            const email = document.getElementById('regEmail').value;
+            const pass = document.getElementById('regPass').value;
 
-            // Cek email duplikat
-            if(members.find(m => m.email === newMember.email)) {
-                alert("Email sudah terdaftar!"); return;
+            // Ambil data lama atau buat array baru
+            let members = JSON.parse(localStorage.getItem('apip_members')) || [];
+
+            // Cek jika email sudah ada
+            if(members.find(m => m.email === email)) {
+                alert("Email sudah terdaftar!");
+                return;
             }
 
-            members.push(newMember);
+            // Simpan member baru
+            members.push({ name, wa, email, pass, saldo: 0, status: 'Member' });
             localStorage.setItem('apip_members', JSON.stringify(members));
-            alert("Pendaftaran Berhasil! Silakan Login.");
+
+            alert("Pendaftaran Berhasil! Silakan cek di Panel Admin.");
             window.location.href = 'login.html';
         };
     </script>
