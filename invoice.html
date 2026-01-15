@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Invoice - APIP STORE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020617; color: white; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .dashed-line { border-top: 2px dashed rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body class="p-6 flex flex-col items-center">
+
+    <div class="w-full max-w-md space-y-6">
+        <div class="text-center py-4">
+            <h1 class="text-xl font-black uppercase text-blue-500">Invoice Pembayaran</h1>
+            <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest mt-1 tracking-tighter">Selesaikan pembayaran anda</p>
+        </div>
+
+        <div class="glass rounded-[2.5rem] p-6 space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-[9px] text-slate-500 uppercase font-bold">No. Invoice</p>
+                    <p id="invID" class="text-sm font-black text-blue-400 font-mono tracking-tighter"></p>
+                </div>
+                <button onclick="salin('invID', 'Invoice')" class="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center text-blue-400 active:scale-90 transition">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+
+            <div class="dashed-line"></div>
+
+            <div class="space-y-3 text-xs">
+                <div class="flex justify-between"><span class="text-slate-500">Item:</span><span id="invItem" class="font-bold"></span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Target:</span><span id="invTarget" class="font-bold text-yellow-500"></span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Metode:</span><span id="invMethod" class="font-black text-blue-400 uppercase"></span></div>
+            </div>
+
+            <div class="dashed-line"></div>
+
+            <div class="bg-blue-600/10 p-4 rounded-2xl border border-blue-500/20 flex justify-between items-center">
+                <div>
+                    <p class="text-[9px] text-blue-400 font-bold uppercase tracking-widest">Total Bayar</p>
+                    <p id="invPrice" class="text-xl font-black"></p>
+                    <span id="invPriceRaw" class="hidden"></span>
+                </div>
+                <button onclick="salin('invPriceRaw', 'Nominal')" class="bg-blue-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase active:scale-90 transition">Salin</button>
+            </div>
+
+            <div id="danaBox" class="hidden p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+                <p class="text-[9px] text-slate-400 uppercase font-bold">Transfer DANA Ke:</p>
+                <div class="flex justify-between items-center">
+                    <span id="danaNum" class="text-lg font-black tracking-widest">083851921812</span>
+                    <button onclick="salin('danaNum', 'Nomor DANA')" class="text-blue-400 p-2 active:scale-90 transition"><i class="fas fa-clone"></i></button>
+                </div>
+                <p class="text-[9px] text-slate-600">A/N: APIP STORE</p>
+            </div>
+
+            <div id="qrisBox" class="hidden bg-white p-4 rounded-2xl text-center">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=APIP_STORE" class="mx-auto w-40">
+                <p class="text-black font-black text-[10px] mt-2">SCAN QRIS UNTUK BAYAR</p>
+            </div>
+
+            <div class="p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-2xl text-center">
+                <p class="text-[10px] text-yellow-500 font-bold leading-relaxed italic">
+                    "Jika Sudah Melakukan Pembayaran Dengan Nominal Yang benar Silahkan Hub wa Admin Untuk Memprosea Pesanan anda"
+                </p>
+            </div>
+        </div>
+
+        <button onclick="konfirmasiWA()" class="w-full bg-green-600 py-4 rounded-2xl flex items-center justify-center space-x-3 shadow-xl active:scale-95 transition">
+            <i class="fab fa-whatsapp text-xl"></i>
+            <span class="text-xs font-black uppercase tracking-widest">Konfirmasi WhatsApp</span>
+        </button>
+    </div>
+
+    <div id="toast" class="fixed bottom-10 bg-blue-600 text-white px-6 py-3 rounded-full text-xs font-bold opacity-0 transition-all z-[100] pointer-events-none">Berhasil Disalin!</div>
+
+    <script>
+        const order = JSON.parse(sessionStorage.getItem('current_order'));
+        if(!order) window.location.href="index.html";
+        
+        document.getElementById('invID').innerText = order.id;
+        document.getElementById('invItem').innerText = order.item;
+        document.getElementById('invTarget').innerText = order.target;
+        document.getElementById('invMethod').innerText = order.payment;
+        document.getElementById('invPrice').innerText = "Rp " + Number(order.price).toLocaleString();
+        document.getElementById('invPriceRaw').innerText = order.price;
+
+        if(order.payment === "DANA") document.getElementById('danaBox').classList.remove('hidden');
+        if(order.payment === "QRIS") document.getElementById('qrisBox').classList.remove('hidden');
+
+        // FUNGSI SALIN ANTI GAGAL
+        function salin(id, label) {
+            const teks = document.getElementById(id).innerText;
+            const el = document.createElement('textarea');
+            el.value = teks;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            const t = document.getElementById('toast');
+            t.innerText = label + " Berhasil Disalin!";
+            t.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => t.classList.replace('opacity-100', 'opacity-0'), 2000);
+        }
+
+        function konfirmasiWA() {
+            const msg = `Halo Admin, konfirmasi pembayaran:%0A%0A*Invoice:* ${order.id}%0A*Item:* ${order.item}%0A*Total:* Rp ${order.price.toLocaleString()}`;
+            window.open(`https://wa.me/6283851921812?text=${msg}`);
+        }
+    </script>
+</body>
+</html>

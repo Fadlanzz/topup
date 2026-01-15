@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAKU COFFEE - Luxury POS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #FDF8F5;
+            --accent: #8B5E3C;
+            --accent-dark: #6F4E37;
+            --sidebar: #2D3436;
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-main); color: #2D3436; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #loginPage { position: fixed; inset: 0; z-index: 100; background: var(--sidebar); display: flex; align-items: center; justify-content: center; }
+        .coffee-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(139, 94, 60, 0.1); }
+        .coffee-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(139, 94, 60, 0.2); border-color: var(--accent); }
+        
+        .sidebar-item.active { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(139, 94, 60, 0.3); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        #receiptModal { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        #receiptVisual { background: white; width: 320px; padding: 25px; border-radius: 4px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+
+<div id="loginPage">
+    <div class="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-md mx-4 text-center">
+        <div class="mb-8">
+            <div class="w-20 h-20 bg-[#8B5E3C] rounded-3xl mx-auto flex items-center justify-center text-white text-3xl mb-4 shadow-lg shadow-amber-900/20">☕</div>
+            <h2 class="text-3xl font-extrabold text-[#2D3436] tracking-tight">LAKU COFFEE</h2>
+            <p class="text-gray-400 text-sm font-medium mt-1">Sistem Kasir v6.0</p>
+        </div>
+        <div class="space-y-4 text-left">
+            <input type="text" id="userIn" placeholder="Username" class="w-full p-4 rounded-2xl bg-gray-50 border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-[#8B5E3C] outline-none transition">
+            <input type="password" id="passIn" placeholder="Password" class="w-full p-4 rounded-2xl bg-gray-50 border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-[#8B5E3C] outline-none transition">
+            <button onclick="handleLogin()" class="w-full bg-[#8B5E3C] hover:bg-[#6F4E37] text-white font-bold py-4 rounded-2xl shadow-xl transition-all active:scale-95 mt-2">Masuk ke Kasir</button>
+        </div>
+    </div>
+</div>
+
+<div id="mainApp" class="hidden min-h-screen flex flex-col lg:flex-row">
+    <aside class="w-full lg:w-72 bg-[#2D3436] text-gray-400 p-8 flex flex-col shadow-2xl">
+        <div class="mb-12">
+            <h1 class="text-white text-2xl font-black tracking-tighter">LAKU<span class="text-[#8B5E3C]">.</span></h1>
+        </div>
+
+        <nav class="space-y-4 flex-1">
+            <button onclick="showTab('pos')" class="sidebar-item active w-full flex items-center gap-4 p-4 rounded-2xl transition font-semibold">
+                <span class="text-xl">💳</span> POS Kasir
+            </button>
+            <button onclick="showTab('produk')" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-2xl transition font-semibold">
+                <span class="text-xl">📦</span> Menu Kopi
+            </button>
+            <button onclick="showTab('laporan')" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-2xl transition font-semibold">
+                <span class="text-xl">📊</span> Ringkasan Laba
+            </button>
+        </nav>
+
+        <div class="mt-auto space-y-6">
+            <div class="bg-white/5 p-5 rounded-3xl border border-white/10">
+                <p class="text-[10px] font-bold uppercase tracking-widest mb-3 text-gray-500">Printer Thermal</p>
+                <button onclick="connectBT()" id="btnBT" class="text-xs font-bold text-[#8B5E3C] flex items-center gap-2">
+                    <span id="btDot">●</span> <span id="btText">Hubungkan Bluetooth</span>
+                </button>
+            </div>
+            <button onclick="location.reload()" class="text-sm font-bold text-red-400 hover:text-red-300 transition flex items-center gap-2">
+                <span>🚪</span> Keluar Sesi
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-6 lg:p-10 h-screen overflow-y-auto no-scrollbar">
+        
+        <div id="pos" class="tab-content active">
+            <div class="flex flex-col xl:flex-row gap-8">
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 class="text-3xl font-black text-[#2D3436]">Daftar Menu</h2>
+                            <p class="text-gray-400 text-sm">Pilih item untuk ditambahkan ke pesanan</p>
+                        </div>
+                        <input type="text" id="searchMenu" onkeyup="render()" placeholder="Cari kopi..." class="px-6 py-3 bg-white shadow-sm border border-gray-100 rounded-2xl w-64 outline-none focus:ring-2 focus:ring-[#8B5E3C]">
+                    </div>
+                    <div id="menuList" class="grid grid-cols-2 md:grid-cols-3 gap-6"></div>
+                </div>
+
+                <div class="w-full xl:w-[400px]">
+                    <div class="bg-white rounded-[40px] p-8 shadow-xl shadow-amber-900/5 sticky top-0 border border-amber-100/50">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="font-extrabold text-xl">Pesanan Baru</h3>
+                            <span class="bg-amber-100 text-[#8B5E3C] px-3 py-1 rounded-full text-xs font-bold" id="cartCount">0 Item</span>
+                        </div>
+
+                        <input type="text" id="custName" placeholder="Nama Pelanggan..." class="w-full p-4 mb-4 bg-gray-50 rounded-2xl border-none text-sm focus:ring-2 focus:ring-[#8B5E3C] outline-none">
+                        
+                        <div id="cartList" class="space-y-4 max-h-[350px] overflow-y-auto no-scrollbar mb-6 pr-2"></div>
+
+                        <div class="pt-6 border-t-2 border-dashed border-gray-100 space-y-3">
+                            <div class="flex justify-between text-gray-400 text-sm">
+                                <span>Diskon Manual</span>
+                                <div class="flex items-center gap-1 font-bold text-gray-700">
+                                    Rp <input type="number" id="discount" value="0" onchange="updateTotal()" class="w-20 text-right outline-none bg-transparent">
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center pt-2">
+                                <span class="font-bold text-gray-400">Total Tagihan</span>
+                                <span id="cartTotal" class="text-3xl font-black text-[#8B5E3C]">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="setMethod('Cash')" class="method-btn bg-[#8B5E3C] text-white py-3 rounded-2xl text-xs font-bold shadow-lg shadow-amber-900/20">CASH</button>
+                                <button onclick="setMethod('QRIS')" class="method-btn bg-gray-50 text-gray-400 py-3 rounded-2xl text-xs font-bold">QRIS</button>
+                            </div>
+                            <button onclick="processOrder()" class="w-full bg-[#2D3436] hover:bg-black text-white py-5 rounded-[24px] font-black text-lg transition-all active:scale-95">SELESAI & CETAK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="produk" class="tab-content">
+            <div class="bg-white p-10 rounded-[40px] shadow-sm border border-gray-100">
+                <h2 class="text-3xl font-black mb-8 text-[#2D3436]">Kelola Menu</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-[#FDF8F5] rounded-[30px] mb-10 border border-[#8B5E3C]/10">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-gray-400 ml-2">NAMA MENU</label>
+                        <input type="text" id="p_nama" class="w-full p-3 rounded-xl border-none ring-1 ring-gray-200 outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-gray-400 ml-2">MODAL (RP)</label>
+                        <input type="number" id="p_modal" class="w-full p-3 rounded-xl border-none ring-1 ring-gray-200 outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-gray-400 ml-2">HARGA JUAL (RP)</label>
+                        <input type="number" id="p_harga" class="w-full p-3 rounded-xl border-none ring-1 ring-gray-200 outline-none">
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="addProduk()" class="w-full bg-[#8B5E3C] text-white font-bold h-[50px] rounded-xl hover:bg-[#6F4E37] transition">Tambah</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-separate border-spacing-y-2">
+                        <thead>
+                            <tr class="text-gray-400 text-xs font-black uppercase">
+                                <th class="p-4">Item</th>
+                                <th class="p-4 text-center">Modal</th>
+                                <th class="p-4 text-center">Jual</th>
+                                <th class="p-4 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="laporan" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10 text-white">
+                <div class="bg-[#2D3436] p-8 rounded-[40px] shadow-xl">
+                    <p class="text-gray-400 text-xs font-bold uppercase mb-2">Total Omzet</p>
+                    <p id="repOmzet" class="text-3xl font-black italic">0</p>
+                </div>
+                <div class="bg-white p-8 rounded-[40px] shadow-xl text-[#2D3436] border border-gray-100">
+                    <p class="text-gray-400 text-xs font-bold uppercase mb-2">Beban Modal</p>
+                    <p id="repModal" class="text-3xl font-black italic">0</p>
+                </div>
+                <div class="bg-[#8B5E3C] p-8 rounded-[40px] shadow-xl shadow-amber-900/20">
+                    <p class="text-amber-200 text-xs font-bold uppercase mb-2">Keuntungan Bersih</p>
+                    <p id="repLaba" class="text-3xl font-black italic">0</p>
+                </div>
+            </div>
+            <div class="bg-white p-10 rounded-[40px] shadow-sm">
+                <h3 class="font-extrabold text-xl mb-6">Riwayat Penjualan</h3>
+                <div id="historyList" class="space-y-4"></div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<div id="receiptModal">
+    <div class="flex flex-col items-center gap-6">
+        <div id="receiptVisual" class="font-mono">
+            <div class="text-center border-b border-dashed border-gray-300 pb-4 mb-4">
+                <h3 class="font-black text-xl">LAKU COFFEE</h3>
+                <p class="text-[10px] text-gray-500">Premium Coffee Experience</p>
+            </div>
+            <div class="flex justify-between text-[11px] mb-4 text-gray-600">
+                <span id="st_cust"></span>
+                <span id="st_pay"></span>
+            </div>
+            <div id="st_items" class="text-[12px] space-y-2 mb-4"></div>
+            <div class="border-t border-dashed border-gray-300 pt-4 space-y-1">
+                <div class="flex justify-between text-xs"><span>Subtotal</span><span id="st_sub"></span></div>
+                <div class="flex justify-between text-xs font-bold text-red-500"><span id="st_label_disc">Diskon</span><span id="st_disc"></span></div>
+                <div class="flex justify-between font-black text-lg pt-2 border-t mt-2"><span>TOTAL</span><span id="st_grand"></span></div>
+            </div>
+            <div class="text-center text-[10px] mt-8 pt-4 border-t border-dashed border-gray-300 text-gray-400 italic">
+                <p id="st_date"></p>
+                <p class="mt-2 font-bold uppercase tracking-[4px]">Thank You</p>
+            </div>
+        </div>
+        <div class="flex gap-3 w-full max-w-[320px]">
+            <button onclick="shareStruk()" class="flex-1 bg-green-600 text-white p-4 rounded-2xl font-bold text-sm shadow-lg shadow-green-900/20 hover:bg-green-700 transition">Kirim ke WA</button>
+            <button onclick="closeReceipt()" class="bg-white text-gray-600 px-8 rounded-2xl font-bold text-sm hover:bg-gray-100 transition">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // CORE LOGIC
+    const userRoot = "apip";
+    const passRoot = "admin123";
+    let products = JSON.parse(localStorage.getItem('laku_v6_p')) || [];
+    let sales = JSON.parse(localStorage.getItem('laku_v6_s')) || [];
+    let cart = [];
+    let payMethod = "Cash";
+    let btChar = null;
+
+    function handleLogin() {
+        const u = document.getElementById('userIn').value;
+        const p = document.getElementById('passIn').value;
+        if(u === userRoot && p === passRoot) {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainApp').classList.remove('hidden');
+            render();
+        } else {
+            alert("Sandi salah, silahkan coba lagi.");
+        }
+    }
+
+    // BLUETOOTH PRINTER
+    async function connectBT() {
+        try {
+            const device = await navigator.bluetooth.requestDevice({ filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }] });
+            const server = await device.gatt.connect();
+            const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
+            const chars = await service.getCharacteristics();
+            btChar = chars[0];
+            document.getElementById('btText').innerText = device.name;
+            document.getElementById('btDot').style.color = "#10b981";
+        } catch (e) { console.log(e); }
+    }
+
+    function save() {
+        localStorage.setItem('laku_v6_p', JSON.stringify(products));
+        localStorage.setItem('laku_v6_s', JSON.stringify(sales));
+        render();
+    }
+
+    function showTab(id) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.currentTarget.classList.add('active');
+        if(id === 'laporan') calculateReport();
+    }
+
+    function addProduk() {
+        const nama = document.getElementById('p_nama').value;
+        const modal = parseInt(document.getElementById('p_modal').value);
+        const harga = parseInt(document.getElementById('p_harga').value);
+        if(!nama || !modal || !harga) return alert("Harap lengkapi semua field.");
+        products.push({ id: Date.now(), nama, modal, harga });
+        document.getElementById('p_nama').value = '';
+        document.getElementById('p_modal').value = '';
+        document.getElementById('p_harga').value = '';
+        save();
+    }
+
+    function addToCart(id) {
+        const p = products.find(x => x.id === id);
+        const c = cart.find(x => x.id === id);
+        if(c) c.qty++; else cart.push({...p, qty: 1});
+        render();
+    }
+
+    function setMethod(m) {
+        payMethod = m;
+        document.querySelectorAll('.method-btn').forEach(b => {
+            b.classList.replace('bg-[#8B5E3C]', 'bg-gray-50');
+            b.classList.replace('text-white', 'text-gray-400');
+        });
+        event.target.classList.replace('bg-gray-50', 'bg-[#8B5E3C]');
+        event.target.classList.replace('text-gray-400', 'text-white');
+    }
+
+    function processOrder() {
+        if(cart.length === 0) return alert("Pilih menu kopi terlebih dahulu.");
+        const cust = document.getElementById('custName').value || "Guest";
+        const disc = parseInt(document.getElementById('discount').value) || 0;
+        const sub = cart.reduce((s, i) => s + (i.harga * i.qty), 0);
+        const grand = sub - disc;
+        const totalModal = cart.reduce((s, i) => s + (i.modal * i.qty), 0);
+
+        const trans = {
+            id: Date.now(), cust, sub, disc, grand, totalModal,
+            items: [...cart], method: payMethod, date: new Date().toISOString()
+        };
+
+        sales.push(trans);
+        save();
+
+        // Fill Digital Receipt
+        document.getElementById('st_cust').innerText = "CUST: " + cust.toUpperCase();
+        document.getElementById('st_pay').innerText = payMethod.toUpperCase();
+        document.getElementById('st_sub').innerText = sub.toLocaleString();
+        document.getElementById('st_disc').innerText = "-" + disc.toLocaleString();
+        document.getElementById('st_grand').innerText = "Rp " + grand.toLocaleString();
+        document.getElementById('st_date').innerText = new Date().toLocaleString();
+        document.getElementById('st_items').innerHTML = cart.map(i => `
+            <div class="flex justify-between">
+                <span>${i.nama} x${i.qty}</span>
+                <span>${(i.harga*i.qty).toLocaleString()}</span>
+            </div>
+        `).join('');
+
+        document.getElementById('receiptModal').style.display = 'flex';
+        
+        // Auto Bluetooth Print
+        if(btChar) {
+            let t = `  LAKU COFFEE\n----------------\nCUST: ${cust}\nPAY: ${payMethod}\n\n`;
+            cart.forEach(i => t += `${i.nama} x${i.qty}\n       ${(i.harga*i.qty).toLocaleString()}\n`);
+            t += `----------------\nDISC: -${disc}\nTOTAL: ${grand}\n\n  Thank You!\n\n\n`;
+            btChar.writeValue(new TextEncoder().encode(t));
+        }
+
+        cart = [];
+        document.getElementById('custName').value = '';
+        document.getElementById('discount').value = 0;
+        render();
+    }
+
+    async function shareStruk() {
+        const canvas = await html2canvas(document.getElementById('receiptVisual'));
+        const blob = await new Promise(r => canvas.toBlob(r));
+        const file = new File([blob], 'laku_struk.png', { type: 'image/png' });
+        if(navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'LAKU COFFEE RECEIPT' });
+        } else {
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL();
+            a.download = 'struk.png';
+            a.click();
+        }
+    }
+
+    function closeReceipt() { document.getElementById('receiptModal').style.display = 'none'; }
+
+    function calculateReport() {
+        const omzet = sales.reduce((s, x) => s + x.grand, 0);
+        const modal = sales.reduce((s, x) => s + x.totalModal, 0);
+        document.getElementById('repOmzet').innerText = "Rp " + omzet.toLocaleString();
+        document.getElementById('repModal').innerText = "Rp " + modal.toLocaleString();
+        document.getElementById('repLaba').innerText = "Rp " + (omzet - modal).toLocaleString();
+
+        document.getElementById('historyList').innerHTML = sales.slice().reverse().map(s => `
+            <div class="flex justify-between items-center p-6 bg-[#FDF8F5] rounded-[25px] border border-amber-900/5">
+                <div>
+                    <p class="font-bold text-[#2D3436] uppercase text-sm">${s.cust}</p>
+                    <p class="text-[10px] text-gray-400 font-semibold">${new Date(s.date).toLocaleString()} | ${s.method}</p>
+                </div>
+                <div class="text-right">
+                    <p class="font-black text-[#8B5E3C]">Rp ${s.grand.toLocaleString()}</p>
+                    <p class="text-[10px] text-green-600 font-bold uppercase tracking-wider">Laba: ${(s.grand - s.totalModal).toLocaleString()}</p>
+                </div>
+            </div>
+        `).join('') || '<p class="text-center py-20 text-gray-300">Belum ada aktivitas transaksi.</p>';
+    }
+
+    function render() {
+        const q = document.getElementById('searchMenu').value.toLowerCase();
+        
+        document.getElementById('menuList').innerHTML = products
+            .filter(p => p.nama.toLowerCase().includes(q))
+            .map(p => `
+            <div onclick="addToCart(${p.id})" class="coffee-card bg-white p-6 rounded-[35px] cursor-pointer active:scale-95 group">
+                <div class="w-14 h-14 bg-[#FDF8F5] rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:bg-[#8B5E3C] group-hover:text-white transition-all">☕</div>
+                <h3 class="font-black text-sm uppercase tracking-tight text-[#2D3436]">${p.nama}</h3>
+                <p class="text-xs font-bold text-[#8B5E3C] mt-1">Rp ${p.harga.toLocaleString()}</p>
+            </div>
+        `).join('') || '<div class="col-span-full py-20 text-center text-gray-300 italic">Menu tidak ditemukan.</div>';
+
+        document.getElementById('cartList').innerHTML = cart.map(i => `
+            <div class="flex justify-between items-center bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                <div class="flex-1">
+                    <h4 class="text-xs font-extrabold uppercase tracking-tight">${i.nama}</h4>
+                    <p class="text-[10px] text-gray-400 font-bold">Rp ${i.harga.toLocaleString()}</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="updateQty(${i.id}, -1)" class="w-8 h-8 bg-white shadow-sm rounded-xl text-xs font-black">-</button>
+                    <span class="text-sm font-black text-[#8B5E3C]">${i.qty}</span>
+                    <button onclick="updateQty(${i.id}, 1)" class="w-8 h-8 bg-white shadow-sm rounded-xl text-xs font-black">+</button>
+                </div>
+            </div>
+        `).join('');
+
+        document.getElementById('cartCount').innerText = cart.reduce((s, i) => s + i.qty, 0) + " Item";
+        const sub = cart.reduce((s, i) => s + (i.harga * i.qty), 0);
+        const disc = parseInt(document.getElementById('discount').value) || 0;
+        document.getElementById('cartTotal').innerText = "Rp " + (sub - disc).toLocaleString();
+
+        document.getElementById('productTable').innerHTML = products.map(p => `
+            <tr class="bg-white hover:bg-gray-50 transition shadow-sm">
+                <td class="p-4 rounded-l-2xl font-black text-xs uppercase text-[#2D3436]">${p.nama}</td>
+                <td class="p-4 text-center text-[10px] text-gray-400 font-bold">Rp ${p.modal.toLocaleString()}</td>
+                <td class="p-4 text-center font-black text-[#8B5E3C] text-xs">Rp ${p.harga.toLocaleString()}</td>
+                <td class="p-4 text-right rounded-r-2xl">
+                    <button onclick="products=products.filter(x=>x.id!=${p.id});save()" class="text-red-300 hover:text-red-500 font-bold text-[10px] uppercase">Hapus</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+</script>
+</body>
+</html>

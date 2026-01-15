@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Invoice - APIP STORE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #020617; color: #f8fafc; min-h-screen: 100vh; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .status-sukses { color: #22c55e; background: rgba(34, 197, 94, 0.1); }
+        .status-pending { color: #eab308; background: rgba(234, 179, 8, 0.1); }
+        .status-gagal { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+    </style>
+</head>
+<body class="p-6">
+
+    <div class="max-w-2xl mx-auto pt-10">
+        <div class="text-center mb-10">
+            <a href="index.html" class="inline-block mb-6 text-blue-400 hover:text-blue-300 transition">
+                <i class="fas fa-arrow-left mr-2"></i> Kembali ke Beranda
+            </a>
+            <h1 class="text-3xl font-black uppercase tracking-tighter text-blue-500">Lacak <span class="text-white">Pesanan</span></h1>
+            <p class="text-slate-400 text-sm mt-2">Masukkan ID Invoice untuk melihat status transaksi Anda</p>
+        </div>
+
+        <div class="glass p-6 rounded-[2rem] mb-8 shadow-2xl">
+            <div class="flex flex-col md:flex-row gap-4">
+                <input type="text" id="inputInvoice" placeholder="Contoh: API-123456" 
+                class="flex-1 bg-slate-900 border border-slate-700 p-4 rounded-2xl outline-none focus:border-blue-500 transition uppercase font-mono tracking-widest text-center">
+                <button onclick="cariInvoice()" class="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-2xl font-bold transition shadow-lg shadow-blue-900/40">
+                    <i class="fas fa-search mr-2"></i> CARI
+                </button>
+            </div>
+        </div>
+
+        <div id="hasilPencarian" class="hidden animate-fade-in">
+            <div class="glass rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/5">
+                <div id="statusBg" class="p-4 text-center font-black uppercase tracking-[0.2em] text-sm">
+                    Status: <span id="statusText">...</span>
+                </div>
+
+                <div class="p-8 space-y-6">
+                    <div class="grid grid-cols-2 gap-y-4 text-sm">
+                        <span class="text-slate-500">ID Invoice</span>
+                        <span id="resId" class="text-right font-mono font-bold text-blue-400"></span>
+
+                        <span class="text-slate-500">Waktu Transaksi</span>
+                        <span id="resDate" class="text-right font-semibold"></span>
+
+                        <span class="text-slate-500">Game / Produk</span>
+                        <span id="resItem" class="text-right font-bold"></span>
+
+                        <span class="text-slate-500">ID Tujuan</span>
+                        <span id="resTarget" class="text-right font-bold text-yellow-500"></span>
+
+                        <span class="text-slate-500">Metode Bayar</span>
+                        <span id="resMethod" class="text-right uppercase font-bold text-slate-300"></span>
+                    </div>
+
+                    <hr class="border-white/5">
+
+                    <div class="flex justify-between items-center py-2">
+                        <span class="font-bold text-lg uppercase tracking-wider">Total Bayar</span>
+                        <span id="resPrice" class="text-2xl font-black text-blue-500"></span>
+                    </div>
+
+                    <div id="qrisContainer" class="hidden mt-6 p-4 bg-white rounded-3xl text-center">
+                        <p class="text-black text-[10px] font-black uppercase mb-3">Selesaikan Pembayaran</p>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=ApipStorePayment" class="mx-auto w-40 h-40">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="errorMsg" class="hidden text-center p-10 glass rounded-3xl border-red-500/30">
+            <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
+            <h3 class="font-bold">ID Invoice Tidak Ditemukan</h3>
+            <p class="text-slate-500 text-xs mt-2">Pastikan ID yang Anda masukkan benar dan sudah melakukan order.</p>
+        </div>
+    </div>
+
+    <script>
+        function cariInvoice() {
+            const input = document.getElementById('inputInvoice').value.trim().toUpperCase();
+            const hasil = document.getElementById('hasilPencarian');
+            const error = document.getElementById('errorMsg');
+            const orders = JSON.parse(localStorage.getItem('apip_orders')) || [];
+
+            // Cari data di localStorage
+            const found = orders.find(o => o.id.toUpperCase() === input);
+
+            if (found) {
+                error.classList.add('hidden');
+                hasil.classList.remove('hidden');
+
+                // Isi Data
+                document.getElementById('resId').innerText = found.id;
+                document.getElementById('resDate').innerText = found.date;
+                document.getElementById('resItem').innerText = found.game + " (" + found.item + ")";
+                document.getElementById('resTarget').innerText = found.target;
+                document.getElementById('resMethod').innerText = found.payment;
+                document.getElementById('resPrice').innerText = "Rp " + Number(found.price).toLocaleString();
+                
+                // Atur Warna Status
+                const statusBox = document.getElementById('statusBg');
+                const statusText = document.getElementById('statusText');
+                statusText.innerText = found.status;
+                
+                statusBox.className = "p-4 text-center font-black uppercase tracking-[0.2em] text-sm ";
+                if(found.status === "Sukses") statusBox.classList.add('bg-green-500/20', 'text-green-500');
+                else if(found.status === "Gagal") statusBox.classList.add('bg-red-500/20', 'text-red-500');
+                else statusBox.classList.add('bg-yellow-500/20', 'text-yellow-500');
+
+                // Tampilkan QRIS jika metode QRIS dan status Pending
+                const qris = document.getElementById('qrisContainer');
+                if(found.payment === "QRIS" && found.status === "Pending") {
+                    qris.classList.remove('hidden');
+                } else {
+                    qris.classList.add('hidden');
+                }
+
+            } else {
+                hasil.classList.add('hidden');
+                error.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
