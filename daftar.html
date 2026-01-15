@@ -2,70 +2,36 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Akun - APIP STORE</title>
+    <title>Daftar - APIP STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-        body { font-family: 'Poppins', sans-serif; background-color: #020617; color: #f8fafc; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        input { background: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(59, 130, 246, 0.2) !important; color: white !important; }
-    </style>
+    <style>body { background-color: #020617; color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'Poppins', sans-serif; }</style>
 </head>
 <body class="p-6">
-    <div class="w-full max-w-md my-10">
-        <div class="glass-card rounded-3xl p-8 shadow-2xl border border-blue-500/20">
-            <h2 class="text-2xl font-bold mb-6 text-center">Buat Akun Baru</h2>
-            <form id="formDaftar" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-slate-300">Nama Lengkap</label>
-                    <input type="text" id="regName" class="w-full px-4 py-3 rounded-xl text-sm" placeholder="Nama lengkap" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-slate-300">WhatsApp</label>
-                    <input type="tel" id="regWa" class="w-full px-4 py-3 rounded-xl text-sm" placeholder="0812xxx" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-slate-300">Email</label>
-                    <input type="email" id="regEmail" class="w-full px-4 py-3 rounded-xl text-sm" placeholder="email@contoh.com" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-slate-300">Password</label>
-                    <input type="password" id="regPass" class="w-full px-4 py-3 rounded-xl text-sm" placeholder="Password kuat" required>
-                </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-900/40">
-                    Daftar Sekarang
-                </button>
-            </form>
-            <p class="mt-8 text-center text-sm text-slate-400">Sudah punya akun? <a href="login.html" class="text-blue-500 font-bold hover:underline">Masuk</a></p>
-        </div>
+    <div class="w-full max-w-md bg-slate-900/50 p-8 rounded-3xl border border-white/10">
+        <h2 class="text-2xl font-bold mb-6 text-center">Buat Akun</h2>
+        <form id="regForm" class="space-y-4">
+            <input type="text" id="rNama" placeholder="Nama Lengkap" class="w-full p-4 rounded-xl bg-slate-800 border border-white/5 outline-none focus:border-blue-500" required>
+            <input type="tel" id="rWa" placeholder="Nomor WhatsApp" class="w-full p-4 rounded-xl bg-slate-800 border border-white/5 outline-none focus:border-blue-500" required>
+            <input type="email" id="rEmail" placeholder="Email" class="w-full p-4 rounded-xl bg-slate-800 border border-white/5 outline-none focus:border-blue-500" required>
+            <input type="password" id="rPass" placeholder="Password" class="w-full p-4 rounded-xl bg-slate-800 border border-white/5 outline-none focus:border-blue-500" required>
+            <button class="w-full py-4 bg-blue-600 rounded-xl font-bold">Daftar Sekarang</button>
+        </form>
     </div>
-
     <script>
-        document.getElementById('formDaftar').onsubmit = function(e) {
+        document.getElementById('regForm').onsubmit = (e) => {
             e.preventDefault();
-            
-            const name = document.getElementById('regName').value;
-            const wa = document.getElementById('regWa').value;
-            const email = document.getElementById('regEmail').value;
-            const pass = document.getElementById('regPass').value;
-
-            // Ambil data lama atau buat array baru
             let members = JSON.parse(localStorage.getItem('apip_members')) || [];
-
-            // Cek jika email sudah ada
-            if(members.find(m => m.email === email)) {
-                alert("Email sudah terdaftar!");
-                return;
-            }
-
-            // Simpan member baru
-            members.push({ name, wa, email, pass, saldo: 0, status: 'Member' });
+            const newMember = {
+                name: document.getElementById('rNama').value,
+                wa: document.getElementById('rWa').value,
+                email: document.getElementById('rEmail').value,
+                pass: document.getElementById('rPass').value,
+                saldo: 0
+            };
+            if(members.find(m => m.email === newMember.email)) return alert("Email sudah ada!");
+            members.push(newMember);
             localStorage.setItem('apip_members', JSON.stringify(members));
-
-            alert("Pendaftaran Berhasil! Silakan cek di Panel Admin.");
-            window.location.href = 'login.html';
+            alert("Berhasil Daftar!"); window.location.href = 'login.html';
         };
     </script>
 </body>
