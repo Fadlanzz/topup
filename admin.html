@@ -11,59 +11,107 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020617; color: white; }
         .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .sidebar-active { background: #3b82f6; color: white; box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+        .input-field { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; font-size: 14px; outline: none; transition: 0.3s; }
+        .input-field:focus { border-color: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
     </style>
 </head>
 <body class="flex flex-col md:flex-row min-h-screen">
 
-    <aside class="w-full md:w-64 glass p-6 border-r border-white/5 space-y-8">
-        <h1 class="text-xl font-black text-center text-blue-500 uppercase tracking-tighter">Apip Panel</h1>
-        <nav class="space-y-3">
-            <button onclick="switchTab('produk')" id="btn-produk" class="w-full p-4 rounded-2xl flex items-center space-x-4 sidebar-active transition">
-                <i class="fas fa-box text-sm"></i> <span class="text-[10px] font-bold uppercase">Produk</span>
-            </button>
-            <button onclick="switchTab('transaksi')" id="btn-transaksi" class="w-full p-4 rounded-2xl flex items-center space-x-4 hover:bg-white/5 transition">
-                <i class="fas fa-receipt text-sm"></i> <span class="text-[10px] font-bold uppercase">Transaksi</span>
-            </button>
-        </nav>
+    <aside class="w-full md:w-64 glass p-6 border-r border-white/5 flex flex-col justify-between">
+        <div class="space-y-8">
+            <h1 class="text-xl font-black text-center text-blue-500 uppercase tracking-tighter">Apip Panel</h1>
+            <nav class="space-y-3">
+                <button onclick="switchTab('produk')" id="btn-produk" class="w-full p-4 rounded-2xl flex items-center space-x-4 sidebar-active transition">
+                    <i class="fas fa-box"></i> <span class="text-xs font-bold uppercase">Manajemen Produk</span>
+                </button>
+                <button onclick="switchTab('transaksi')" id="btn-transaksi" class="w-full p-4 rounded-2xl flex items-center space-x-4 hover:bg-white/5 transition">
+                    <i class="fas fa-receipt"></i> <span class="text-xs font-bold uppercase">Riwayat Transaksi</span>
+                </button>
+            </nav>
+        </div>
+
+        <button onclick="logout()" class="mt-10 w-full p-4 rounded-2xl flex items-center space-x-4 text-red-400 hover:bg-red-500/10 transition border border-red-500/20">
+            <i class="fas fa-sign-out-alt"></i> <span class="text-xs font-bold uppercase">Keluar Admin</span>
+        </button>
     </aside>
 
-    <main class="flex-1 p-6 md:p-12">
-        <div id="tab-produk" class="tab-content space-y-6">
-            <div class="glass p-6 rounded-[2rem]">
-                <h2 class="text-[10px] font-black uppercase text-blue-500 mb-4">Input Produk</h2>
-                <form id="formProduk" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+    <main class="flex-1 p-6 md:p-12 max-w-7xl mx-auto w-full">
+        
+        <div id="tab-produk" class="tab-content space-y-8">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-extrabold tracking-tight">Manajemen <span class="text-blue-500">Produk</span></h2>
+            </div>
+
+            <div class="glass p-8 rounded-[2rem] border border-blue-500/10">
+                <h3 id="formTitle" class="text-[10px] font-black uppercase text-blue-400 mb-6 tracking-widest">Tambah Produk Baru</h3>
+                <form id="formProduk" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <input type="hidden" id="editIndex">
-                    <select id="game" class="bg-slate-900 p-4 rounded-xl text-xs border border-white/5 outline-none">
-                        <option value="Mobile Legends">Mobile Legends</option>
-                    </select>
-                    <select id="sub" class="bg-slate-900 p-4 rounded-xl text-xs border border-white/5 outline-none text-blue-400 font-bold">
-                        <option value="Diamonds ML">Diamonds ML</option>
-                        <option value="Weekly Pass">Weekly Pass</option>
-                    </select>
-                    <input type="text" id="nama" placeholder="Nama Item" class="bg-slate-900 p-4 rounded-xl text-xs border border-white/5 outline-none" required>
-                    <input type="number" id="harga" placeholder="Harga" class="bg-slate-900 p-4 rounded-xl text-xs border border-white/5 outline-none" required>
-                    <button class="bg-blue-600 rounded-xl font-black text-[10px] uppercase">Simpan</button>
+                    
+                    <div class="flex flex-col space-y-2">
+                        <label class="text-[10px] uppercase font-bold text-slate-400 ml-1">Kategori Game</label>
+                        <select id="game" class="input-field text-white">
+                            <option value="Mobile Legends">Mobile Legends</option>
+                            <option value="Free Fire">Free Fire</option>
+                            <option value="PUBG Mobile">PUBG Mobile</option>
+                        </select>
+                    </div>
+
+                    <div class="flex flex-col space-y-2">
+                        <label class="text-[10px] uppercase font-bold text-slate-400 ml-1">Sub Kategori</label>
+                        <select id="sub" class="input-field text-blue-400 font-bold">
+                            <option value="Diamonds ML">Diamonds ML</option>
+                            <option value="Weekly Pass">Weekly Pass</option>
+                            <option value="Membership">Membership</option>
+                        </select>
+                    </div>
+
+                    <div class="flex flex-col space-y-2">
+                        <label class="text-[10px] uppercase font-bold text-slate-400 ml-1">Nama Item/Voucher</label>
+                        <input type="text" id="nama" placeholder="Contoh: 86 Diamonds" class="input-field" required>
+                    </div>
+
+                    <div class="flex flex-col space-y-2">
+                        <label class="text-[10px] uppercase font-bold text-slate-400 ml-1">Harga (Rupiah)</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-3 text-slate-500 text-sm">Rp</span>
+                            <input type="number" id="harga" placeholder="0" class="input-field w-full pl-10" required>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-4 flex justify-end space-x-3">
+                        <button type="button" onclick="resetForm()" class="px-6 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-white/5 transition">Batal</button>
+                        <button id="btnSimpan" class="bg-blue-600 hover:bg-blue-500 px-8 py-3 rounded-xl font-black text-[10px] uppercase transition shadow-lg shadow-blue-500/20">Simpan Produk</button>
+                    </div>
                 </form>
             </div>
+
             <div class="glass rounded-[2rem] overflow-hidden">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-900 text-[10px] uppercase text-slate-500">
-                        <tr><th class="p-5">Game/Sub</th><th class="p-5">Item</th><th class="p-5">Harga</th><th class="p-5 text-center">Aksi</th></tr>
-                    </thead>
-                    <tbody id="listProduk" class="text-sm"></tbody>
-                </table>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-900/50 text-[10px] uppercase text-slate-500 border-b border-white/5">
+                            <tr>
+                                <th class="p-6">Detail Produk</th>
+                                <th class="p-6">Harga Jual</th>
+                                <th class="p-6 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listProduk" class="divide-y divide-white/5">
+                            </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <div id="tab-transaksi" class="tab-content hidden space-y-4">
-            <div class="glass p-4 rounded-2xl flex items-center px-6">
+        <div id="tab-transaksi" class="tab-content hidden space-y-6">
+            <h2 class="text-2xl font-extrabold tracking-tight">Kelola <span class="text-blue-500">Transaksi</span></h2>
+            <div class="glass p-4 rounded-2xl flex items-center px-6 border border-white/5">
                 <i class="fas fa-search text-slate-500 mr-4"></i>
                 <input type="text" id="cariInv" onkeyup="cariTabel()" placeholder="Cari No. Invoice (Contoh: API-123)..." class="bg-transparent w-full outline-none text-sm font-semibold">
             </div>
-            <div class="glass rounded-[2rem] overflow-hidden">
-                <table class="w-full text-left text-xs">
+            <div class="glass rounded-[2rem] overflow-hidden overflow-x-auto">
+                <table class="w-full text-left text-xs min-w-[600px]">
                     <thead class="bg-slate-900 text-[10px] uppercase text-slate-500">
-                        <tr><th class="p-5">Invoice</th><th class="p-5">Detail</th><th class="p-5">Status</th><th class="p-5 text-center">Aksi</th></tr>
+                        <tr><th class="p-6">Invoice</th><th class="p-6">Detail</th><th class="p-6">Status</th><th class="p-6 text-center">Aksi</th></tr>
                     </thead>
                     <tbody id="listInv" class="divide-y divide-white/5"></tbody>
                 </table>
@@ -72,6 +120,7 @@
     </main>
 
     <script>
+        // TAB SWITCHER
         function switchTab(t) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById('tab-'+t).classList.remove('hidden');
@@ -80,60 +129,114 @@
             if(t === 'transaksi') renderInv();
         }
 
+        // LOGOUT FUNCTION
+        function logout() {
+            if(confirm('Apakah Anda yakin ingin keluar?')) {
+                // Hapus session jika ada, atau arahkan ke login.html
+                window.location.href = 'login.html'; 
+            }
+        }
+
+        // PRODUCT MANAGEMENT
         const f = document.getElementById('formProduk');
         f.onsubmit = (e) => {
             e.preventDefault();
             let p = JSON.parse(localStorage.getItem('apip_products')) || [];
             let data = { game: f.game.value, sub: f.sub.value, item: f.nama.value, price: f.harga.value };
-            if(f.editIndex.value === "") p.push(data); else p[f.editIndex.value] = data;
+            
+            if(f.editIndex.value === "") {
+                p.push(data);
+            } else {
+                p[f.editIndex.value] = data;
+            }
+            
             localStorage.setItem('apip_products', JSON.stringify(p));
-            f.reset(); f.editIndex.value = ""; renderProduk();
+            resetForm();
+            renderProduk();
+            alert('Produk berhasil disimpan!');
         };
+
+        function resetForm() {
+            f.reset();
+            f.editIndex.value = "";
+            document.getElementById('formTitle').innerText = "Tambah Produk Baru";
+            document.getElementById('btnSimpan').innerText = "Simpan Produk";
+        }
 
         function renderProduk() {
             let p = JSON.parse(localStorage.getItem('apip_products')) || [];
             document.getElementById('listProduk').innerHTML = p.map((x,i) => `
-                <tr class="border-t border-white/5 hover:bg-white/5">
-                    <td class="p-5"><b>${x.game}</b><br><small class="text-blue-500 font-bold uppercase text-[9px]">${x.sub}</small></td>
-                    <td class="p-5 font-semibold">${x.item}</td>
-                    <td class="p-5 text-green-400 font-bold">Rp ${Number(x.price).toLocaleString()}</td>
-                    <td class="p-5 text-center">
-                        <button onclick="editP(${i})" class="text-blue-400 mr-3"><i class="fas fa-edit"></i></button>
-                        <button onclick="hapusP(${i})" class="text-red-500"><i class="fas fa-trash"></i></button>
+                <tr class="hover:bg-white/5 transition">
+                    <td class="p-6">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold text-white">${x.item}</span>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <span class="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded uppercase font-bold border border-blue-500/20">${x.game}</span>
+                                <span class="text-[9px] text-slate-500 uppercase font-bold">${x.sub}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-6 text-green-400 font-bold font-mono">Rp ${Number(x.price).toLocaleString()}</td>
+                    <td class="p-6 text-center">
+                        <div class="flex justify-center space-x-2">
+                            <button onclick="editP(${i})" class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white transition"><i class="fas fa-edit text-xs"></i></button>
+                            <button onclick="hapusP(${i})" class="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition"><i class="fas fa-trash text-xs"></i></button>
+                        </div>
                     </td>
                 </tr>`).join('');
         }
 
+        function editP(i) {
+            let p = JSON.parse(localStorage.getItem('apip_products'))[i];
+            f.game.value = p.game; 
+            f.sub.value = p.sub; 
+            f.nama.value = p.item; 
+            f.harga.value = p.price; 
+            f.editIndex.value = i;
+            
+            document.getElementById('formTitle').innerText = "Edit Produk - #" + (i+1);
+            document.getElementById('btnSimpan').innerText = "Perbarui Produk";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function hapusP(i) { 
+            if(confirm('Hapus produk ini secara permanen?')) { 
+                let p = JSON.parse(localStorage.getItem('apip_products')); 
+                p.splice(i,1); 
+                localStorage.setItem('apip_products', JSON.stringify(p)); 
+                renderProduk(); 
+            } 
+        }
+
+        // TRANSACTION MANAGEMENT
         function renderInv() {
             let o = JSON.parse(localStorage.getItem('apip_orders')) || [];
             document.getElementById('listInv').innerHTML = o.slice().reverse().map((x,i) => {
                 let realI = o.length - 1 - i;
-                return `<tr class="inv-row hover:bg-white/5" data-id="${x.id.toUpperCase()}">
-                    <td class="p-5"><b class="text-blue-400 font-mono text-sm">${x.id}</b><br><small class="text-slate-500">${x.date}</small></td>
-                    <td class="p-5"><b>${x.target}</b><br><span class="text-xs text-slate-400">${x.item}</span></td>
-                    <td class="p-5"><select onchange="upStat(${realI},this.value)" class="bg-slate-900 border border-white/10 rounded p-1 text-[10px] outline-none">
-                        <option ${x.status=='Pending'?'selected':''}>Pending</option>
-                        <option ${x.status=='Sukses'?'selected':''}>Sukses</option>
-                        <option ${x.status=='Gagal'?'selected':''}>Gagal</option>
-                    </select></td>
-                    <td class="p-5 text-center"><button onclick="hapusI(${realI})" class="text-red-500"><i class="fas fa-trash text-xs"></i></button></td>
+                return `<tr class="inv-row hover:bg-white/5 transition" data-id="${x.id.toUpperCase()}">
+                    <td class="p-6"><b class="text-blue-400 font-mono text-sm">${x.id}</b><br><small class="text-slate-500">${x.date}</small></td>
+                    <td class="p-6"><b>${x.target}</b><br><span class="text-xs text-slate-400">${x.item}</span></td>
+                    <td class="p-6">
+                        <select onchange="upStat(${realI},this.value)" class="bg-slate-900 border border-white/10 rounded-lg p-2 text-[10px] outline-none focus:border-blue-500">
+                            <option ${x.status=='Pending'?'selected':''}>Pending</option>
+                            <option ${x.status=='Sukses'?'selected':''}>Sukses</option>
+                            <option ${x.status=='Gagal'?'selected':''}>Gagal</option>
+                        </select>
+                    </td>
+                    <td class="p-6 text-center">
+                        <button onclick="hapusI(${realI})" class="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition"><i class="fas fa-trash text-xs"></i></button>
+                    </td>
                 </tr>`}).join('');
         }
 
-        function editP(i) {
-            let p = JSON.parse(localStorage.getItem('apip_products'))[i];
-            f.game.value = p.game; f.sub.value = p.sub; f.nama.value = p.item; f.harga.value = p.price; f.editIndex.value = i;
-            window.scrollTo(0,0);
-        }
-
-        function hapusP(i) { if(confirm('Hapus Item?')) { let p = JSON.parse(localStorage.getItem('apip_products')); p.splice(i,1); localStorage.setItem('apip_products', JSON.stringify(p)); renderProduk(); } }
-        function hapusI(i) { if(confirm('Hapus Transaksi?')) { let o = JSON.parse(localStorage.getItem('apip_orders')); o.splice(i,1); localStorage.setItem('apip_orders', JSON.stringify(o)); renderInv(); } }
+        function hapusI(i) { if(confirm('Hapus riwayat transaksi ini?')) { let o = JSON.parse(localStorage.getItem('apip_orders')); o.splice(i,1); localStorage.setItem('apip_orders', JSON.stringify(o)); renderInv(); } }
         function upStat(i,s) { let o = JSON.parse(localStorage.getItem('apip_orders')); o[i].status = s; localStorage.setItem('apip_orders', JSON.stringify(o)); renderInv(); }
         function cariTabel() {
             let v = document.getElementById('cariInv').value.toUpperCase();
             document.querySelectorAll('.inv-row').forEach(r => r.style.display = r.dataset.id.includes(v) ? '' : 'none');
         }
 
+        // Initialize
         renderProduk();
     </script>
 </body>
