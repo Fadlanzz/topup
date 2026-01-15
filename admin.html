@@ -3,175 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Panel Admin - APIP STORE</title>
+    <title>Master Panel - APIP STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background: #020617; color: white; font-family: 'Poppins', sans-serif; }
-        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
-        .tab-content { display: none; }
-        .tab-active { display: block; }
-        .btn-active { background: #3b82f6; color: white; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+        .glass { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body class="flex flex-col md:flex-row min-h-screen">
-
     <aside class="w-full md:w-64 glass p-6 border-r border-white/5 space-y-6">
-        <h1 class="text-xl font-bold text-blue-500 text-center uppercase tracking-widest">Apip Panel</h1>
-        <nav class="space-y-2">
-            <button onclick="showTab('produk')" id="btn-produk" class="w-full text-left p-4 rounded-xl text-xs font-bold uppercase transition btn-active"><i class="fas fa-box mr-3"></i> Produk</button>
-            <button onclick="showTab('transaksi')" id="btn-transaksi" class="w-full text-left p-4 rounded-xl text-xs font-bold uppercase transition hover:bg-white/5"><i class="fas fa-receipt mr-3"></i> Transaksi</button>
-            <button onclick="showTab('member')" id="btn-member" class="w-full text-left p-4 rounded-xl text-xs font-bold uppercase transition hover:bg-white/5"><i class="fas fa-users mr-3"></i> Member</button>
-            <button onclick="logoutAdmin()" class="w-full text-left p-4 rounded-xl text-xs font-bold uppercase text-red-400 hover:bg-red-500/10"><i class="fas fa-sign-out-alt mr-3"></i> Logout</button>
-        </nav>
+        <h1 class="text-xl font-bold text-blue-500 text-center uppercase">Apip Admin</h1>
+        <button onclick="renderMembers()" class="w-full bg-blue-600/10 text-blue-400 p-3 rounded-xl text-sm font-bold"><i class="fas fa-users mr-2"></i> KELOLA MEMBER</button>
+        <button onclick="location.href='index.html'" class="w-full p-3 text-sm text-slate-400">Kembali ke Web</button>
     </aside>
 
     <main class="flex-1 p-8">
-        
-        <div id="produk" class="tab-content tab-active space-y-6">
-            <h2 class="text-2xl font-bold">Manajemen Produk</h2>
-            <form id="prodForm" class="glass p-6 rounded-2xl grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input type="text" id="pName" placeholder="Nama Produk" class="bg-slate-900 border border-white/10 p-3 rounded-xl text-sm outline-none focus:border-blue-500">
-                <input type="number" id="pPrice" placeholder="Harga" class="bg-slate-900 border border-white/10 p-3 rounded-xl text-sm outline-none focus:border-blue-500">
-                <button class="bg-blue-600 font-black text-xs uppercase rounded-xl py-3">Tambah Produk</button>
-            </form>
-            <div class="glass rounded-2xl overflow-hidden">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-white/5 text-[10px] uppercase text-slate-400">
-                        <tr><th class="p-4">Nama Produk</th><th class="p-4">Harga</th><th class="p-4 text-center">Aksi</th></tr>
-                    </thead>
-                    <tbody id="prodList"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="transaksi" class="tab-content space-y-6">
-            <h2 class="text-2xl font-bold">Daftar Transaksi <span class="text-blue-500">(Invoice)</span></h2>
-            <div class="glass rounded-2xl overflow-hidden">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-white/5 text-[10px] uppercase text-slate-400">
-                        <tr><th class="p-4">Invoice</th><th class="p-4">Pembeli / Item</th><th class="p-4">Status</th><th class="p-4 text-center">Aksi</th></tr>
-                    </thead>
-                    <tbody id="orderList"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="member" class="tab-content space-y-6">
-            <h2 class="text-2xl font-bold">Kelola Member & Saldo</h2>
-            <div class="glass rounded-2xl overflow-hidden">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-white/5 text-[10px] uppercase text-slate-400">
-                        <tr><th class="p-4">Nama Member</th><th class="p-4">Email</th><th class="p-4">Saldo</th><th class="p-4 text-center">Aksi</th></tr>
-                    </thead>
-                    <tbody id="memberList"></tbody>
-                </table>
-            </div>
+        <h2 class="text-2xl font-bold mb-6">Daftar Member Baru</h2>
+        <div class="glass rounded-2xl overflow-hidden">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-white/5 text-slate-400 uppercase text-[10px]">
+                    <tr>
+                        <th class="p-4">Nama</th>
+                        <th class="p-4">Email/WA</th>
+                        <th class="p-4">Saldo</th>
+                        <th class="p-4">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="memberList"></tbody>
+            </table>
         </div>
     </main>
 
     <script>
-        function showTab(id) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('tab-active'));
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('btn-active'));
-            document.getElementById(id).classList.add('tab-active');
-            document.getElementById('btn-'+id).classList.add('btn-active');
+        function renderMembers() {
+            // Membaca data 'apip_members' yang disimpan dari daftar.html
+            const members = JSON.parse(localStorage.getItem('apip_members')) || [];
+            const list = document.getElementById('memberList');
             
-            if(id === 'member') renderMembers();
-            if(id === 'transaksi') renderOrders();
-        }
-
-        // --- MANAJEMEN TRANSAKSI (INVOICE) ---
-        function renderOrders() {
-            const orders = JSON.parse(localStorage.getItem('apip_orders')) || [];
-            const list = document.getElementById('orderList');
-            if(orders.length === 0) {
-                list.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-500">Belum ada transaksi masuk.</td></tr>`;
+            if(members.length === 0) {
+                list.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-500">Belum ada member mendaftar.</td></tr>`;
                 return;
             }
-            list.innerHTML = orders.slice().reverse().map((o, i) => {
-                const realIdx = orders.length - 1 - i;
-                return `
+
+            list.innerHTML = members.map((m, i) => `
                 <tr class="border-t border-white/5">
-                    <td class="p-4"><b class="text-blue-400 font-mono">${o.id}</b><br><small class="text-slate-500">${o.date}</small></td>
-                    <td class="p-4"><b>${o.target}</b><br><span class="text-xs text-slate-400">${o.item}</span></td>
+                    <td class="p-4 font-bold text-blue-400">${m.name}</td>
+                    <td class="p-4 text-xs">${m.email}<br>${m.wa}</td>
+                    <td class="p-4 font-bold text-green-400">Rp ${Number(m.saldo).toLocaleString()}</td>
                     <td class="p-4">
-                        <select onchange="updateStatus(${realIdx}, this.value)" class="bg-slate-900 text-[10px] font-bold border border-white/10 rounded-md p-1 outline-none">
-                            <option value="Pending" ${o.status=='Pending'?'selected':''}>PENDING</option>
-                            <option value="Sukses" ${o.status=='Sukses'?'selected':''}>SUKSES</option>
-                            <option value="Gagal" ${o.status=='Gagal'?'selected':''}>GAGAL</option>
-                        </select>
+                        <button onclick="editSaldo(${i})" class="bg-blue-600 text-white px-3 py-1 rounded text-xs">Isi Saldo</button>
+                        <button onclick="hapusMember(${i})" class="text-red-500 ml-2"><i class="fas fa-trash"></i></button>
                     </td>
-                    <td class="p-4 text-center">
-                        <button onclick="hapusOrder(${realIdx})" class="text-red-500 hover:text-red-400"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>`;
-            }).join('');
-        }
-
-        function updateStatus(idx, stat) {
-            let orders = JSON.parse(localStorage.getItem('apip_orders'));
-            orders[idx].status = stat;
-            localStorage.setItem('apip_orders', JSON.stringify(orders));
-            renderOrders();
-        }
-
-        function hapusOrder(idx) {
-            if(confirm("Hapus data invoice ini?")) {
-                let orders = JSON.parse(localStorage.getItem('apip_orders'));
-                orders.splice(idx, 1);
-                localStorage.setItem('apip_orders', JSON.stringify(orders));
-                renderOrders();
-            }
-        }
-
-        // --- MANAJEMEN MEMBER & SALDO ---
-        function renderMembers() {
-            const members = JSON.parse(localStorage.getItem('apip_members')) || [];
-            document.getElementById('memberList').innerHTML = members.map((m, i) => `
-                <tr class="border-t border-white/5">
-                    <td class="p-4"><b>${m.name}</b></td>
-                    <td class="p-4 text-slate-400">${m.email}</td>
-                    <td class="p-4 text-green-400 font-bold">Rp ${Number(m.saldo).toLocaleString()}</td>
-                    <td class="p-4 text-center">
-                        <button onclick="editSaldo(${i})" class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-lg text-[10px] font-bold mr-2 uppercase">Edit Saldo</button>
-                    </td>
-                </tr>`).join('');
+                </tr>
+            `).join('');
         }
 
         function editSaldo(i) {
-            let m = JSON.parse(localStorage.getItem('apip_members'));
-            let s = prompt("Saldo baru untuk " + m[i].name, m[i].saldo);
+            let members = JSON.parse(localStorage.getItem('apip_members'));
+            let s = prompt("Masukkan jumlah saldo baru untuk " + members[i].name, members[i].saldo);
             if(s !== null) {
-                m[i].saldo = parseInt(s) || 0;
-                localStorage.setItem('apip_members', JSON.stringify(m));
+                members[i].saldo = parseInt(s) || 0;
+                localStorage.setItem('apip_members', JSON.stringify(members));
                 renderMembers();
             }
         }
 
-        function logoutAdmin() {
-            if(confirm("Keluar dari Panel Admin?")) window.location.href = 'login.html';
+        function hapusMember(i) {
+            if(confirm("Hapus member ini?")) {
+                let members = JSON.parse(localStorage.getItem('apip_members'));
+                members.splice(i, 1);
+                localStorage.setItem('apip_members', JSON.stringify(members));
+                renderMembers();
+            }
         }
 
-        // Render awal produk
-        function renderProducts() {
-            const products = JSON.parse(localStorage.getItem('apip_products')) || [];
-            document.getElementById('prodList').innerHTML = products.map((p, i) => `
-                <tr class="border-t border-white/5">
-                    <td class="p-4">${p.name}</td>
-                    <td class="p-4 font-bold text-blue-400">Rp ${Number(p.price).toLocaleString()}</td>
-                    <td class="p-4 text-center"><button onclick="hapusProd(${i})" class="text-red-500"><i class="fas fa-trash"></i></button></td>
-                </tr>`).join('');
-        }
-        
-        function hapusProd(i) {
-            let p = JSON.parse(localStorage.getItem('apip_products'));
-            p.splice(i, 1);
-            localStorage.setItem('apip_products', JSON.stringify(p));
-            renderProducts();
-        }
-
-        renderProducts();
+        // Jalankan saat halaman dibuka
+        renderMembers();
     </script>
 </body>
 </html>
