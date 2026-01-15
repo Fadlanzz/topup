@@ -5,46 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - APIP STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #020617; color: #f8fafc; font-family: 'Poppins', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #020617; color: #f8fafc; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
         .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
         input { background: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(59, 130, 246, 0.2) !important; color: white !important; }
+        input:focus { border-color: #3b82f6 !important; outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
     </style>
 </head>
 <body class="p-6">
     <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black tracking-tighter uppercase">APIP <span class="text-blue-500">STORE</span></h1>
+        </div>
+
         <div class="glass-card rounded-3xl p-8 shadow-2xl">
-            <h2 class="text-2xl font-bold mb-6 text-center">Masuk Akun</h2>
-            <form id="loginForm" class="space-y-4">
-                <input type="email" id="logEmail" class="w-full px-4 py-3 rounded-xl text-sm" placeholder="Email Anda" required>
-                <input type="password" id="logPass" class="w-full px-4 py-3 rounded-xl text-sm" placeholder="Password" required>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition">
+            <h2 class="text-2xl font-bold mb-6 text-center">Selamat Datang</h2>
+            <form id="loginForm" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-slate-300">Email atau WhatsApp</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fas fa-user"></i></span>
+                        <input type="text" id="userInput" class="w-full pl-10 pr-4 py-3 rounded-xl text-sm" placeholder="Masukkan Email/WA Anda" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-slate-300">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fas fa-lock"></i></span>
+                        <input type="password" id="passInput" class="w-full pl-10 pr-4 py-3 rounded-xl text-sm" placeholder="••••••••" required>
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <a href="#" class="text-xs text-blue-400 hover:underline">Lupa Password?</a>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition duration-300 shadow-lg shadow-blue-900/40">
                     Masuk Sekarang
                 </button>
             </form>
-            <p class="mt-6 text-center text-sm text-slate-400">Belum punya akun? <a href="daftar.html" class="text-blue-500 font-bold">Daftar</a></p>
+
+            <div class="mt-8 text-center">
+                <p class="text-sm text-slate-400">Belum punya akun? <a href="daftar.html" class="text-blue-500 font-bold hover:underline">Daftar Gratis</a></p>
+            </div>
+        </div>
+        <div class="text-center mt-8">
+            <a href="index.html" class="text-slate-500 hover:text-white text-xs transition"><i class="fas fa-arrow-left mr-2"></i> Kembali ke Beranda</a>
         </div>
     </div>
 
     <script>
         document.getElementById('loginForm').onsubmit = function(e) {
             e.preventDefault();
-            const email = document.getElementById('logEmail').value;
-            const pass = document.getElementById('logPass').value;
-            const members = JSON.parse(localStorage.getItem('apip_members')) || [];
+            
+            const userOrEmail = document.getElementById('userInput').value;
+            const password = document.getElementById('passInput').value;
 
-            // Cek Admin (Hardcoded untuk contoh)
-            if(email === "admin@apip.com" && pass === "admin123") {
-                window.location.href = 'admin.html'; return;
+            // 1. Cek Login Admin (Manual)
+            if(userOrEmail === "admin@apip.com" && password === "admin123") {
+                alert("Login Admin Berhasil!");
+                window.location.href = 'admin.html';
+                return;
             }
 
-            const user = members.find(m => m.email === email && m.pass === pass);
-            if(user) {
+            // 2. Ambil data member dari laci 'apip_members'
+            const members = JSON.parse(localStorage.getItem('apip_members')) || [];
+
+            // 3. Cari member yang cocok
+            const user = members.find(m => 
+                (m.email === userOrEmail || m.wa === userOrEmail) && m.pass === password
+            );
+
+            if (user) {
+                // Simpan data user yang sedang login (Session)
                 localStorage.setItem('currentUser', JSON.stringify(user));
-                alert("Login Berhasil! Selamat datang " + user.name);
-                window.location.href = 'index.html'; // Arahkan ke dashboard user
+                alert("Selamat datang kembali, " + user.name + "!");
+                window.location.href = 'index.html'; // Pindah ke dashboard/beranda
             } else {
-                alert("Email atau Password salah!");
+                alert("Akun tidak ditemukan atau password salah! Pastikan Anda sudah daftar.");
             }
         };
     </script>
